@@ -25,9 +25,8 @@ public class MemoryGame extends JFrame implements ActionListener {
     int timesRemoveCouple = 0;
     int count = 0, id, preX, preY, X, Y;
     int level = 0, hit = 0, h;
-    int sizeX[] = { 2, 2, 2, 3, 4, 4, 4, 4, 4, 4 };
-    int sizeY[] = { 3, 4, 6, 6, 6, 7, 8, 9, 10, 11 };
-    int TIME[] = { 10, 20, 30, 50, 65, 80, 100, 120, 140, 150 };
+    int sizeX[] = { 2, 2, 2, 3, 4, 4, 4, 4, 4, 4,2 };
+    int sizeY[] = { 3, 4, 6, 6, 6, 7, 8, 9, 10, 11,3 };
     int maxTime = 30, time = 0;
     int maxXY = 100;
     int row = 2, column = 3;
@@ -42,13 +41,14 @@ public class MemoryGame extends JFrame implements ActionListener {
     private int totalBackground = 9, totalIcon = 50;
 
     public MemoryGame(int k, int score, int timeRemove) {
+
         dividingScaleIcon= (k>3)?0.8:1;
         widthIcon =(int) (widthIcon * dividingScaleIcon);
         heightIcon =(int) (heightIcon * dividingScaleIcon);
         this.setTitle("Memory game");
         System.out.println(getClass());
         level = k;
-        maxTime = TIME[k];
+        maxTime =sizeX[k]*sizeY[k]*2;
         cn = init(k, score, timeRemove);
         timer = new Timer(240, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -126,7 +126,7 @@ public class MemoryGame extends JFrame implements ActionListener {
         startPointY = 20;
         row = sizeX[k];
         column = sizeY[k];
-        maxTime = TIME[k] * 10;
+        maxTime = column*row*2 * 10;
         time = 0;
         Container cn = this.getContentPane();
 
@@ -173,11 +173,11 @@ public class MemoryGame extends JFrame implements ActionListener {
         buttonHelp.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int index = -1, tempX = 0, tempY = 0;
-                for (int i = 0; i < column; i++)
+                int index = -2, tempX = 0, tempY = 0;
+                for (int i = 0; i < row; i++)
                     for (int j = 0; j < column; j++)
                         if (matrixNumber[i][j] > 0 && matrixNumber[i][j] <= 50) {
-                            if (index == -1) {
+                            if (index == -2) {
                                 index = matrixNumber[i][j];
                                 tempX = i;
                                 tempY = j;
@@ -189,7 +189,7 @@ public class MemoryGame extends JFrame implements ActionListener {
                                 RemoveTwoIcon(i, j, tempX, tempY);
                                 tick[i][j] = tick[tempX][tempY] = false;
                                 showMatrix();
-                                matrixIconButtons[i][j].setIcon(getIcon(-1));
+
                                 score_bt.setText(String.valueOf(Integer.parseInt(score_bt.getText()) + 100));
                                 hit++;
 
@@ -259,10 +259,17 @@ public class MemoryGame extends JFrame implements ActionListener {
 
     public void newGame() {
         this.dispose();
-        new  MemoryGame(0, 100, 0);
+        new  MemoryGame(0, 100, 1);
     }
 
     public void nextGame() {
+
+        if(level >= sizeX.length-1 || level >= sizeY.length){
+            showDialogNewGame("You win.\n" + "Score: " + score_bt.getText() + "\n" + "Do you want to retry?",
+                    "Notification");
+            this.dispose();
+            return;
+        }
         this.dispose();
         new MemoryGame(level + 1, Integer.parseInt(score_bt.getText()) + (maxTime - time), timesRemoveCouple);
     }
@@ -374,6 +381,6 @@ public class MemoryGame extends JFrame implements ActionListener {
         return count;
     }
     public static void main(String[] args) {
-        new  MemoryGame(0, 100, 0);
+        new  MemoryGame(0, 100, 1);
     }
 }
