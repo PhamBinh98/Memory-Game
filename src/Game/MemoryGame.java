@@ -17,7 +17,7 @@ import javax.swing.*;
 
 
 public class MemoryGame extends JFrame implements ActionListener {
-    int dx = 5, dy = 5, newMaxX, newMaxY, startPointX, startPointY, countFunctionImage;
+    int startPointX, startPointY, countFunctionImage;
     int widthIcon = 120, heightIcon = 170, borderIcon = 5;
     double dividingScaleIcon = 0.8;
     int clickCount;
@@ -25,15 +25,14 @@ public class MemoryGame extends JFrame implements ActionListener {
     int timesRemoveCouple = 0;
     int count = 0, id, preX, preY, X, Y;
     int level = 0, hit = 0, h;
-    int sizeX[] = { 2, 2, 2, 3, 4, 4, 4, 4, 4, 4,2 };
-    int sizeY[] = { 3, 4, 6, 6, 6, 7, 8, 9, 10, 11,3 };
+    int sizeX[] = { 2, 2, 2, 3, 4, 4, 4, 4, 4, 4,2 };  // number row of level i = sizeX[i]
+    int sizeY[] = { 3, 4, 6, 6, 6, 7, 8, 9, 10, 11,3 }; // number column of level i = sizeY[i]
     int maxTime = 30, time = 0;
-    int maxXY = 100;
-    int row = 2, column = 3;
+    int row = 0, column = 0;
     private JProgressBar progressTime;
-    private JButton matrixIconButtons[][] = new JButton[maxXY][maxXY];
-    private boolean tick[][] = new boolean[maxXY][maxXY];
-    private int matrixNumber[][] = new int[maxXY][maxXY];
+    private JButton matrixIconButtons[][];
+    private boolean tick[][];
+    private int matrixNumber[][];
     private JButton score_bt;
     private JPanel pn, pn2;
     Container cn;
@@ -46,7 +45,6 @@ public class MemoryGame extends JFrame implements ActionListener {
         widthIcon =(int) (widthIcon * dividingScaleIcon);
         heightIcon =(int) (heightIcon * dividingScaleIcon);
         this.setTitle("Memory game");
-        System.out.println(getClass());
         level = k;
         maxTime =sizeX[k]*sizeY[k]*2;
         cn = init(k, score, timeRemove);
@@ -71,12 +69,13 @@ public class MemoryGame extends JFrame implements ActionListener {
     }
 
     public void open() {
-        if (matrixNumber[X][Y] > 50) {
+
+        // If the icon is after 50, 300 or 100 points will be added
+        if (matrixNumber[X][Y] > totalIcon) {
             clickCount--;
             score_bt.setText(
                     String.valueOf(Integer.parseInt(score_bt.getText()) + (matrixNumber[X][Y] == 51 ? 300 : 100)));
             RemoveTwoIcon(X, Y, X, Y);
-            showMatrix();
             tick[X][Y] = false;
             hit++;
             if (hit == row * column / 2 + countFunctionImage / 2) {
@@ -85,7 +84,7 @@ public class MemoryGame extends JFrame implements ActionListener {
 
                 buttonHelp.setEnabled(true);
                 timesRemoveCouple++;
-                buttonHelp.setText("Remove 1 couple" + "(" + String.valueOf(timesRemoveCouple) + ")");
+                buttonHelp.setText("Remove 1 couple" + "(" + (timesRemoveCouple) + ")");
                 nextGame();
             }
 
@@ -94,7 +93,6 @@ public class MemoryGame extends JFrame implements ActionListener {
             if (id == matrixNumber[X][Y]) {
                 RemoveTwoIcon(X, Y, preX, preY);
                 tick[X][Y] = tick[preX][preY] = false;
-                showMatrix();
                 matrixIconButtons[X][Y].setVisible(false);
                 score_bt.setText(String.valueOf(Integer.parseInt(score_bt.getText()) + 10));
                 hit++;
@@ -104,7 +102,7 @@ public class MemoryGame extends JFrame implements ActionListener {
 
                     buttonHelp.setEnabled(true);
                     timesRemoveCouple++;
-                    buttonHelp.setText("Remove 1 couple" + "(" + String.valueOf(timesRemoveCouple) + ")");
+                    buttonHelp.setText("Remove 1 couple" + "(" + (timesRemoveCouple) + ")");
                     nextGame();
                 }
             } else {
@@ -120,13 +118,14 @@ public class MemoryGame extends JFrame implements ActionListener {
     public Container init(int k, int score, int timeRemove) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         timesRemoveCouple = timeRemove;
-        newMaxX = 120 * row + dx;
-        newMaxY = 170 * column + dy;
         startPointX = 50;
         startPointY = 20;
         row = sizeX[k];
         column = sizeY[k];
         maxTime = column*row*2 * 10;
+        matrixIconButtons = new JButton[row][column];
+        tick = new boolean[row][column];
+        matrixNumber = new int[row][column];
         time = 0;
         Container cn = this.getContentPane();
 
@@ -176,7 +175,7 @@ public class MemoryGame extends JFrame implements ActionListener {
                 int index = -2, tempX = 0, tempY = 0;
                 for (int i = 0; i < row; i++)
                     for (int j = 0; j < column; j++)
-                        if (matrixNumber[i][j] > 0 && matrixNumber[i][j] <= 50) {
+                        if (matrixNumber[i][j] > 0 && matrixNumber[i][j] <= totalIcon) {
                             if (index == -2) {
                                 index = matrixNumber[i][j];
                                 tempX = i;
@@ -188,7 +187,6 @@ public class MemoryGame extends JFrame implements ActionListener {
                                 }
                                 RemoveTwoIcon(i, j, tempX, tempY);
                                 tick[i][j] = tick[tempX][tempY] = false;
-                                showMatrix();
 
                                 score_bt.setText(String.valueOf(Integer.parseInt(score_bt.getText()) + 100));
                                 hit++;
@@ -198,7 +196,6 @@ public class MemoryGame extends JFrame implements ActionListener {
                                     buttonHelp.setEnabled(false);
                                 buttonHelp.setText("Remove 1 couple" + "(" + String.valueOf(timesRemoveCouple) + ")");
 
-                                // System.out.println(hit);
                                 if (hit == row * column / 2 + countFunctionImage / 2) {
                                     timer.stop();
                                     timer2.stop();
@@ -221,12 +218,10 @@ public class MemoryGame extends JFrame implements ActionListener {
         pn2.add(buttonHelp);
         progressTime = new JProgressBar(0, maxTime);
         progressTime.setValue(maxTime);
-        System.out.println(maxTime);
         progressTime.setForeground(Color.orange);
 
         matrixNumber = new CreatMatrixNumber(row, column, totalIcon).getMatrix();
         countFunctionImage=CountFuctionImage(matrixNumber);
-        showMatrix();
         cn.add(pn);
         cn.add(progressTime, "North");
         cn.add(pn2, "South");
@@ -298,7 +293,8 @@ public class MemoryGame extends JFrame implements ActionListener {
             tick[i][j] = false;
             clickCount++;
             if (count == 0) {
-                if (matrixNumber[i][j] > 50) {
+
+                if (matrixNumber[i][j] > totalIcon) {
                     matrixIconButtons[i][j].setIcon(getIcon(matrixNumber[i][j]));
                     X = i;
                     Y = j;
@@ -310,7 +306,7 @@ public class MemoryGame extends JFrame implements ActionListener {
                 preX = i;
                 preY = j;
             } else {
-                if (matrixNumber[i][j] > 50) {
+                if (matrixNumber[i][j] > totalIcon) {
                     matrixIconButtons[i][j].setIcon(getIcon(matrixNumber[i][j]));
                     X = i;
                     Y = j;
@@ -376,7 +372,7 @@ public class MemoryGame extends JFrame implements ActionListener {
         int count=0;
         for(int i=0;i<row;i++)
             for(int j=0;j<column;j++)
-                if(a[i][j]>50)
+                if(a[i][j]> totalIcon)
                     count++;
         return count;
     }
